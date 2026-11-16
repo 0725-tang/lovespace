@@ -15,7 +15,7 @@ npm run share
 它会做这些事：
 
 1. 检查 http://127.0.0.1:4321 上的网站是否已经运行；没运行就自动启动。
-2. 检查 cloudflared；没有就尝试从 GitHub 下载到 .tools/。
+2. 检查 cloudflared；没有就依次尝试 GitHub 和公共镜像，下载到 .tools/。
 3. 建立 Cloudflare 临时隧道。
 4. 解析出 https://xxxx.trycloudflare.com 链接。
 5. 打印链接，写入 .share-url.txt，并尝试复制到剪贴板。
@@ -26,7 +26,7 @@ npm run share
 
 cloudflared 大约 30 MB，只会下载一次，缓存在 .tools/。
 
-如果网络无法访问 GitHub，脚本会提示手动安装：
+不需要提前安装 Cloudflare Tunnel。脚本会先试 GitHub，再试镜像；如果网络连镜像也无法访问，才需要手动安装：
 
 - Windows：winget install --id Cloudflare.cloudflared
 - macOS：brew install cloudflared

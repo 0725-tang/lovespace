@@ -120,7 +120,11 @@ npm run share
 
 分享前先在本机完成首次初始化；未初始化的公网链接不会显示创建页面。
 
-它会在需要时自动启动本地服务，并建立 Cloudflare Quick Tunnel，打印一个临时公网链接。第一次运行会把 cloudflared 下载到 .tools/，之后复用。
+它会在需要时自动启动本地服务，并建立 Cloudflare Quick Tunnel，打印一个临时公网链接。
+
+**不需要预先安装 Cloudflare Tunnel。** 第一次运行会自动把 cloudflared 下载到 .tools/，之后复用；下载会先试 GitHub，失败再试公共镜像。
+
+如果网络连镜像也访问不了，脚本会提示手动安装；也可以用 `CLOUDFLARED_BIN` 指向已有的 cloudflared。
 
 保持终端窗口打开，链接才会有效；按 Ctrl+C 停止分享。每次重新运行都会生成新链接。
 

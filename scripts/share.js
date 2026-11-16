@@ -8,7 +8,11 @@ const { spawn, spawnSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const TOOLS = path.join(ROOT, '.tools');
 const DOWNLOAD_BASE = 'https://github.com/cloudflare/cloudflared/releases/latest/download/';
-const CHECKSUMS = DOWNLOAD_BASE + 'cloudflared-checksums.txt';
+const DOWNLOAD_SOURCES = [
+  { name: 'GitHub', base: DOWNLOAD_BASE },
+  { name: 'ghproxy 镜像', base: 'https://ghproxy.net/' + DOWNLOAD_BASE },
+  { name: 'ghfast 镜像', base: 'https://ghfast.top/' + DOWNLOAD_BASE }
+];
 const URL_FILE = path.join(ROOT, '.share-url.txt');
 
 function usage() {
@@ -101,10 +105,10 @@ async function downloadFile(url, file) {
   fs.writeFileSync(file, buffer);
 }
 
-async function verifyChecksum(asset, file, enabled) {
+async function verifyChecksum(asset, file, enabled, checksumUrl) {
   if (!enabled) return;
   try {
-    const response = await fetch(CHECKSUMS, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+    const response = await fetch(checksumUrl, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const text = await response.text();
     const line = text.split(/\r?\n/).find(function (item) { return item.indexOf(asset) !== -1; });
@@ -127,24 +131,32 @@ async function installCloudflared(options) {
   const archivePath = path.join(TOOLS, info.asset);
   const target = info.archive ? archivePath : binaryPath;
   console.log('  没有找到 cloudflared，正在下载（约 30 MB，只需一次）…');
-  await downloadFile(DOWNLOAD_BASE + info.asset, target);
-  try {
-    await verifyChecksum(info.asset, target, options.verify);
-  } catch (error) {
-    fs.rmSync(target, { force: true });
-    throw error;
+  const failures = [];
+  for (const source of DOWNLOAD_SOURCES) {
+    try {
+      console.log('  尝试从 ' + source.name + ' 下载…');
+      await downloadFile(source.base + info.asset, target);
+      await verifyChecksum(info.asset, target, options.verify, source.base + 'cloudflared-checksums.txt');
+      if (info.archive) {
+        const result = spawnSync('tar', ['-xzf', archivePath, '-C', TOOLS], { stdio: 'inherit' });
+        if (result.status !== 0) throw new Error('解压失败');
+        fs.rmSync(archivePath, { force: true });
+      }
+      if (!fs.existsSync(binaryPath)) throw new Error('没有找到可执行文件');
+      if (process.platform !== 'win32') fs.chmodSync(binaryPath, 0o755);
+      const version = spawnSync(binaryPath, ['--version'], { stdio: 'ignore' });
+      if (version.status !== 0) throw new Error('无法运行');
+      console.log('  cloudflared 已准备好：' + binaryPath);
+      return binaryPath;
+    } catch (error) {
+      fs.rmSync(target, { force: true });
+      fs.rmSync(archivePath, { force: true });
+      fs.rmSync(binaryPath, { force: true });
+      failures.push(source.name + '：' + error.message);
+      console.warn('  ' + source.name + ' 下载失败：' + error.message);
+    }
   }
-  if (info.archive) {
-    const result = spawnSync('tar', ['-xzf', archivePath, '-C', TOOLS], { stdio: 'inherit' });
-    if (result.status !== 0) throw new Error('解压 cloudflared 失败，请手动安装。');
-    fs.rmSync(archivePath, { force: true });
-  }
-  if (!fs.existsSync(binaryPath)) throw new Error('下载完成，但没有找到 cloudflared 可执行文件。');
-  if (process.platform !== 'win32') fs.chmodSync(binaryPath, 0o755);
-  const version = spawnSync(binaryPath, ['--version'], { stdio: 'ignore' });
-  if (version.status !== 0) throw new Error('cloudflared 无法运行。');
-  console.log('  cloudflared 已准备好：' + binaryPath);
-  return binaryPath;
+  throw new Error('cloudflared 下载失败。' + failures.join('；'));
 }
 
 async function ensureCloudflared(options) {
@@ -230,7 +242,7 @@ function copyToClipboard(text) {
 
 function installHint() {
   console.error('');
-  console.error('  手动安装 cloudflared：');
+  console.error('  npm run share 会自动下载 cloudflared；如果网络拦截了 GitHub 和镜像，请手动安装：');
   console.error('  Windows: winget install --id Cloudflare.cloudflared');
   console.error('  macOS:   brew install cloudflared');
   console.error('  Linux:   https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/');

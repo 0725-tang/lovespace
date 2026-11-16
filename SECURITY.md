@@ -26,6 +26,12 @@ LoveSpace 是一个本机优先的私人项目，不是多用户平台。
 
 留言簿是公开的，分享前请检查内容。
 
+## cloudflared 下载
+
+分享脚本会自动下载 cloudflared。下载优先使用 GitHub，失败时尝试公共镜像；能获取校验文件时会校验 SHA-256，无法校验时会明确提示。
+
+如果介意第三方镜像，请手动安装 cloudflared，并用 CLOUDFLARED_BIN 指向它。
+
 ## 情书加密
 
 情书正文用 PBKDF2-SHA256 + AES-256-GCM 加密，暗号不会出现在公开数据里。
