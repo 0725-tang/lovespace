@@ -1,0 +1,17 @@
+node_modules/
+dist/
+content/site.json
+content/photos.json
+content/memories/*.md
+content/media/photos/*
+data/guestbook.json
+data/*.tmp
+.env
+.DS_Store
+Thumbs.db
+*.log
+tmp/
+.edge-profile/
+.tools/
+.share-url.txt
+shot-*.png

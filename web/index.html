@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>我们的宇宙 · LoveSpace</title>
+  <meta name="description" content="一个只围绕她转的小宇宙：照片墙、恋爱计时和我们的故事。">
+  <meta name="theme-color" content="#070510">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23070510'/%3E%3Cpath d='M32 49c-2-2-17-11-17-22 0-6 4-10 9-10 4 0 7 2 8 5 1-3 4-5 8-5 5 0 9 4 9 10 0 11-15 20-17 22z' fill='%23ff8fa3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="is-loading">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__heart"><span>♥</span></div>
+    <p>正在进入我们的宇宙</p>
+  </div>
+
+  <canvas id="starfield" class="starfield" aria-hidden="true"></canvas>
+  <div class="ambient" aria-hidden="true">
+    <span class="ambient__orb ambient__orb--rose"></span>
+    <span class="ambient__orb ambient__orb--violet"></span>
+    <span class="ambient__orb ambient__orb--gold"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"><span id="scrollProgress"></span></div>
+
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <header class="site-header" id="siteHeader">
+    <a class="brand" href="#universe" aria-label="回到首页">
+      <span class="brand__mark">L</span>
+      <span class="brand__word">LOVE<span>SPACE</span></span>
+    </a>
+
+    <nav class="nav" aria-label="主导航">
+      <a class="nav__link is-active" href="#universe">宇宙</a>
+      <a class="nav__link" href="#gallery">照片墙</a>
+      <a class="nav__link" href="#timeline">时间线</a>
+      <a class="nav__link" href="#game">星光捕手</a>
+      <a class="nav__link" href="#letter">情书</a>
+      <a class="nav__link" href="#guestbook">留言</a>
+    </nav>
+
+    <div class="header-meta">
+      <span class="header-meta__dot" aria-hidden="true"></span>
+      <span id="headerSince">SINCE</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="universe">
+      <div class="hero__inner">
+        <div class="hero__copy">
+          <p class="eyebrow hero__eyebrow">
+            <span class="eyebrow__line" aria-hidden="true"></span>
+            <span id="heroEyebrow">A LITTLE UNIVERSE, JUST FOR YOU</span>
+          </p>
+
+          <h1 class="hero__title">
+            <span id="heroTitle">你是我所有星轨的</span><span class="hero__accent-line"><em id="heroAccent">终点</em><span class="hero__title-dot">。</span></span>
+          </h1>
+
+          <p class="hero__subtitle" id="heroSubtitle"></p>
+
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#gallery">
+              <span>进入我们的宇宙</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="btn btn--quiet" href="#timeline">
+              <span>读我们的故事</span>
+            </a>
+          </div>
+
+          <div class="hero__names">
+            <span class="hero__name" id="heroMe">你</span>
+            <span class="hero__amp">&</span>
+            <span class="hero__name" id="heroHer">TA</span>
+            <span class="hero__since" id="heroSince">EST. 2022</span>
+          </div>
+        </div>
+
+        <div class="orbit-stage" id="orbitStage" aria-hidden="true">
+          <span class="orbit__glow"></span>
+          <span class="orbit__ring orbit__ring--outer"></span>
+          <span class="orbit__ring orbit__ring--inner"></span>
+          <span class="orbit__axis"></span>
+          <span class="orbit__spark orbit__spark--1"></span>
+          <span class="orbit__spark orbit__spark--2"></span>
+          <span class="orbit__spark orbit__spark--3"></span>
+
+          <span class="orbit__core">
+            <span class="orbit__heart">♥</span>
+            <span class="orbit__core-label">US</span>
+          </span>
+
+          <span class="orbit__planet orbit__planet--me">
+            <span class="orbit__planet-halo"></span>
+            <span class="orbit__emoji" id="meEmoji">🌙</span>
+            <span class="orbit__label" id="meOrbitName">你</span>
+          </span>
+
+          <span class="orbit__planet orbit__planet--her">
+            <span class="orbit__planet-halo"></span>
+            <span class="orbit__emoji" id="herEmoji">🌸</span>
+            <span class="orbit__label" id="herOrbitName">TA</span>
+          </span>
+
+          <p class="orbit__caption">TWO SMALL STARS<br>ONE SHARED ORBIT</p>
+        </div>
+      </div>
+
+      <div class="hero__footer">
+        <div class="together">
+          <p class="hero__label" id="counterLabel">我们已经相爱</p>
+          <div class="together__clock">
+            <strong class="together__days" id="daysTogether">0</strong>
+            <span class="together__unit">天</span>
+            <span class="together__sub">
+              <span id="hoursTogether">00</span><i>:</i><span id="minutesTogether">00</span><i>:</i><span id="secondsTogether">00</span>
+            </span>
+          </div>
+          <p class="hero__note" id="counterNote"></p>
+        </div>
+
+        <div class="next-meet">
+          <p class="hero__label" id="nextLabel">距离下一次见面</p>
+          <div class="next-meet__clock" id="nextClock">
+            <span><strong id="nextDays">--</strong><small>天</small></span>
+            <span><strong id="nextHours">--</strong><small>时</small></span>
+            <span><strong id="nextMinutes">--</strong><small>分</small></span>
+            <span><strong id="nextSeconds">--</strong><small>秒</small></span>
+          </div>
+          <p class="hero__note" id="nextNote"></p>
+        </div>
+      </div>
+
+      <a class="scroll-cue" href="#gallery">
+        <span class="scroll-cue__line" aria-hidden="true"></span>
+        <span>向下坠落，进入我们的宇宙</span>
+      </a>
+    </section>
+
+    <section class="stats" aria-label="我们的数字">
+      <div class="stats__grid" id="statsGrid"></div>
+    </section>
+
+    <section class="section gallery" id="gallery">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">
+            <span class="eyebrow__line" aria-hidden="true"></span>
+            <span id="galleryEyebrow">OUR FRAME OF MEMORY</span>
+          </p>
+          <h2 class="section-title" id="galleryTitle">照片墙</h2>
+        </div>
+        <div class="section-head__side">
+          <p id="gallerySubtitle"></p>
+          <div class="filters" id="galleryFilters" aria-label="按年份筛选照片"></div>
+          <button class="btn btn--quiet photo-add" type="button" id="photoAdd" hidden>+ 添加照片</button>
+        </div>
+      </div>
+
+      <div class="photo-wall" id="photoWall"></div>
+
+      <p class="section-footnote">
+        <span class="section-footnote__mark">✳</span>
+        点击任意一张，回到那个瞬间
+      </p>
+    </section>
+
+    <section class="section timeline-section" id="timeline">
+      <div class="section-head section-head--center">
+        <div>
+          <p class="eyebrow eyebrow--center">
+            <span class="eyebrow__line" aria-hidden="true"></span>
+            <span id="timelineEyebrow">THE STORY WE WROTE</span>
+            <span class="eyebrow__line" aria-hidden="true"></span>
+          </p>
+          <h2 class="section-title" id="timelineTitle">恋爱时间线</h2>
+          <p class="section-head__lede" id="timelineSubtitle"></p>
+        </div>
+        <button class="btn btn--quiet memory-open" type="button" id="memoryOpen" hidden>+ 新建回忆</button>
+      </div>
+
+      <div class="timeline" id="timelineList"></div>
+    </section>
+
+    <section class="section game-section" id="game">
+      <div class="section-head section-head--center">
+        <div>
+          <p class="eyebrow eyebrow--center">
+            <span class="eyebrow__line" aria-hidden="true"></span>
+            <span id="gameEyebrow">A TINY GAME FOR YOU</span>
+            <span class="eyebrow__line" aria-hidden="true"></span>
+          </p>
+          <h2 class="section-title" id="gameTitle">星光捕手</h2>
+          <p class="section-head__lede" id="gameSubtitle"></p>
+        </div>
+      </div>
+
+      <div class="game-shell" data-reveal>
+        <div class="game-card">
+          <div class="game-hud" aria-label="游戏状态">
+            <div class="game-hud__item">
+              <span>得分</span>
+              <strong id="gameScore">0</strong>
+            </div>
+            <div class="game-hud__item">
+              <span>连击</span>
+              <strong id="gameCombo">×1</strong>
+            </div>
+            <div class="game-hud__item">
+              <span>记忆碎片</span>
+              <strong id="gameFragmentsCount">0</strong>
+            </div>
+            <div class="game-hud__item game-hud__item--time">
+              <span>剩余时间</span>
+              <strong id="gameTime">30</strong>
+              <small>s</small>
+            </div>
+          </div>
+
+          <div class="game-stage" id="gameStage">
+            <canvas id="gameCanvas" tabindex="0" aria-label="星光捕手小游戏：移动月亮接住坠落的星光"></canvas>
+
+            <div class="game-overlay" id="gameStartScreen">
+              <p class="game-overlay__kicker">A TINY GAME FOR YOU</p>
+              <h3>替我接住<br><em>坠落的星光</em></h3>
+              <p class="game-overlay__text">移动鼠标或手指，接住爱心、星星和记忆碎片，避开乌云。</p>
+              <button class="btn btn--primary" type="button" id="gameStart">
+                <span>开始捕星</span>
+                <span aria-hidden="true">→</span>
+              </button>
+              <p class="game-overlay__hint">最高分 <span id="gameBest">0</span> · 用 ← → 也可以</p>
+            </div>
+
+            <div class="game-result" id="gameResult" tabindex="-1" hidden>
+              <div class="game-result__card">
+                <p class="game-result__kicker" id="gameResultKicker">MISSION COMPLETE</p>
+                <h3 id="gameResultTitle">你接住了我的整片宇宙</h3>
+                <div class="game-result__score">
+                  <span>本次得分</span>
+                  <strong id="gameFinalScore">0</strong>
+                </div>
+                <p class="game-result__rank" id="gameRank"></p>
+                <blockquote id="gameReward"></blockquote>
+                <p class="game-result__sign" id="gameRewardSign"></p>
+                <div class="game-fragments" id="gameFragments"></div>
+                <button class="btn btn--primary" type="button" id="gameRestart">再玩一次</button>
+              </div>
+            </div>
+
+            <div class="game-toast" id="gameToast" role="status"></div>
+            <div class="game-vignette" aria-hidden="true"></div>
+          </div>
+
+          <div class="game-footer">
+            <span class="game-footer__hint">移动以捕星 · 30 秒后有一句话给你</span>
+            <span class="game-footer__keys"><kbd>←</kbd><kbd>→</kbd> 也可以</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section letter-section" id="letter">
+      <div class="letter-layout">
+        <div class="letter-visual" data-reveal>
+          <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="拆开这封情书">
+            <span class="envelope__glow" aria-hidden="true"></span>
+            <div class="envelope__body">
+              <div class="envelope__paper">
+                <span class="envelope__paper-mark">TO<br>MY<br>FAVORITE<br>UNIVERSE</span>
+                <span class="envelope__paper-line"></span>
+              </div>
+              <div class="envelope__flap"></div>
+              <div class="envelope__front"></div>
+              <span class="envelope__seal" id="letterSeal">L</span>
+            </div>
+          </div>
+          <p class="letter-visual__caption">SEALED WITH A KISS <span>·</span> 只有你知道暗号</p>
+        </div>
+
+        <div class="letter-copy" data-reveal>
+          <p class="eyebrow">
+            <span class="eyebrow__line" aria-hidden="true"></span>
+            <span id="letterEyebrow">A LETTER SEALED WITH A KISS</span>
+          </p>
+          <h2 class="section-title" id="letterTitle">一封只给你看的信</h2>
+          <p class="letter-subtitle" id="letterSubtitle"></p>
+          <div class="letter-hint" id="letterHintBox">
+            <span class="letter-hint__label">暗号提示</span>
+            <p id="letterHint"></p>
+          </div>
+          <p class="letter-empty" id="letterEmpty" hidden>情书还没有写。等你想说的时候，再把它封起来。</p>
+          <button class="btn btn--quiet letter-write" type="button" id="letterWrite" hidden>写给 TA 的第一封信</button>
+          <button class="btn btn--primary" type="button" id="letterOpen">
+            <span>拆开信封</span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button class="letter-edit" type="button" id="letterEdit" hidden>编辑这封信</button>
+          <p class="letter-note">这封信不在时间线里，也不在任何公开列表里。它只在这里，等一个知道暗号的人。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section guestbook-section" id="guestbook">
+      <div class="section-head section-head--center">
+        <div>
+          <p class="eyebrow eyebrow--center">
+            <span class="eyebrow__line" aria-hidden="true"></span>
+            <span id="guestbookEyebrow">LEAVE A LITTLE LIGHT</span>
+            <span class="eyebrow__line" aria-hidden="true"></span>
+          </p>
+          <h2 class="section-title" id="guestbookTitle">把一句话留在这里</h2>
+          <p class="section-head__lede" id="guestbookSubtitle"></p>
+        </div>
+      </div>
+
+      <div class="guestbook-layout">
+        <aside class="guestbook-intro" data-reveal>
+          <span class="guestbook-intro__mark" aria-hidden="true">“</span>
+          <p class="guestbook-quote" id="guestbookQuote"></p>
+          <div class="guestbook-count">
+            <strong id="guestbookCount">0</strong>
+            <span>句留在这里</span>
+          </div>
+          <p class="guestbook-intro__note" id="guestbookNote"></p>
+          <div class="guestbook-orbit" aria-hidden="true"><span></span><i></i></div>
+        </aside>
+
+        <div class="guestbook-panel" data-reveal>
+          <form class="guestbook-form" id="guestbookForm" novalidate>
+            <div class="guestbook-form__row">
+              <label class="guestbook-field guestbook-field--name">
+                <span>你的名字 <em>可选</em></span>
+                <input id="guestName" name="name" type="text" maxlength="24" autocomplete="nickname" placeholder="怎么称呼你？">
+              </label>
+              <span class="guestbook-counter" id="guestbookCounter">0 / 240</span>
+            </div>
+            <label class="guestbook-field">
+              <span>想对 TA 说的话</span>
+              <textarea id="guestMessage" name="message" rows="4" maxlength="240" placeholder="写一句只在这里出现的话……" required></textarea>
+            </label>
+            <div class="guestbook-form__foot">
+              <p class="guestbook-form__hint">留言会保存在这台电脑上，不会上传到第三方。</p>
+              <button class="btn btn--primary" type="submit" id="guestbookSubmit">
+                <span id="guestbookSubmitText">把这句话留下</span>
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+            <p class="guestbook-status" id="guestbookStatus" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="guestbook-wall">
+        <div class="guestbook-wall__head">
+          <span>THE WALL · 留言墙</span>
+          <span id="guestbookMeta">还没有留言</span>
+        </div>
+        <div class="guestbook-grid" id="guestbookMessages"></div>
+      </div>
+    </section>
+
+    <section class="closing" aria-label="未完待续">
+      <div class="closing__inner" data-reveal>
+        <p class="eyebrow eyebrow--center">
+          <span class="eyebrow__line" aria-hidden="true"></span>
+          TO BE CONTINUED
+          <span class="eyebrow__line" aria-hidden="true"></span>
+        </p>
+        <h2>故事还没有写完，<br><em>下一章仍然是你。</em></h2>
+        <p class="closing__text">这一页先写到这里。下一章，留给未来的我们。</p>
+        <a class="closing__link" href="#universe">回到宇宙中心 <span aria-hidden="true">↑</span></a>
+      </div>
+      <div class="closing__orbit" aria-hidden="true"><span></span></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__left">
+      <span class="brand__mark brand__mark--small">L</span>
+      <p id="footerLine">技术是冷的，但用技术爱你这件事，是热的。</p>
+      <p class="site-footer__birthdays" id="footerBirthdays"></p>
+    </div>
+    <p class="site-footer__right">
+      © <span id="footerYear">2026</span>
+      <span id="footerNames">你 × TA</span>
+      <span class="site-footer__sep">·</span>
+      <span id="footerCredit">Made with LoveSpace</span>
+    </p>
+    <button class="space-delete" type="button" id="spaceDelete" hidden>注销恋爱空间</button>
+  </footer>
+
+  <div class="letter-modal" id="letterModal" hidden>
+    <div class="letter-modal__backdrop" data-letter-close></div>
+    <div class="letter-modal__dialog" id="letterDialog" role="dialog" aria-modal="true" aria-label="加密情书" tabindex="-1">
+      <button class="letter-modal__close" type="button" id="letterClose" aria-label="合上信">×</button>
+      <div class="letter-lock" id="letterLockView">
+        <span class="letter-lock__icon" aria-hidden="true"><i></i></span>
+        <p class="letter-lock__kicker">A LETTER FOR YOU</p>
+        <h3 id="letterModalTitle">先对上我们的暗号</h3>
+        <p class="letter-lock__hint" id="letterModalHint"></p>
+        <form class="letter-form" id="letterForm">
+          <label class="sr-only" for="letterCode">暗号</label>
+          <input class="letter-code" id="letterCode" name="code" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" placeholder="输入暗号">
+          <button class="btn btn--primary letter-submit" type="submit" id="letterSubmit">拆开信</button>
+        </form>
+        <p class="letter-error" id="letterError" role="alert"></p>
+      </div>
+
+      <article class="letter-paper" id="letterContent" hidden>
+        <div class="letter-paper__top">
+          <span>TO MY FAVORITE UNIVERSE</span>
+          <span id="letterDate"></span>
+        </div>
+        <p class="letter-paper__lead">写给你：</p>
+        <h3 id="letterRevealTitle">致 你</h3>
+        <div class="letter-paper__body" id="letterParagraphs"></div>
+        <p class="letter-paper__sign" id="letterSignature"></p>
+        <p class="letter-paper__ps" id="letterPs"></p>
+        <span class="letter-paper__seal" id="letterPaperSeal">L</span>
+        <button class="letter-fold" type="button" id="letterFold">把信折好，收进心里</button>
+      </article>
+
+      <div class="letter-confetti" id="letterConfetti" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="memory-modal" id="memoryModal" hidden>
+    <div class="memory-modal__backdrop" data-memory-close></div>
+    <div class="memory-modal__dialog" id="memoryDialog" role="dialog" aria-modal="true" aria-labelledby="memoryModalTitle" tabindex="-1">
+      <button class="memory-modal__close" type="button" id="memoryClose" aria-label="关闭新建回忆">×</button>
+      <header class="memory-modal__head">
+        <p class="eyebrow"><span class="eyebrow__line" aria-hidden="true"></span>NEW MEMORY</p>
+        <h3 id="memoryModalTitle">写一篇新回忆</h3>
+        <p>保存后会自动生成 Markdown 文件，放进 content/memories/。</p>
+      </header>
+
+      <form class="memory-form" id="memoryForm" novalidate>
+        <div class="memory-form__grid">
+          <label class="memory-field">
+            <span>日期</span>
+            <input id="memoryDate" name="date" type="date" required>
+          </label>
+          <label class="memory-field">
+            <span>标题</span>
+            <input id="memoryTitle" name="title" type="text" maxlength="80" required placeholder="例如：第一次一起看雪">
+          </label>
+          <label class="memory-field">
+            <span>地点</span>
+            <input id="memoryPlace" name="place" type="text" maxlength="80" placeholder="杭州 · 西湖">
+          </label>
+          <label class="memory-field">
+            <span>心情</span>
+            <input id="memoryMood" name="mood" type="text" maxlength="40" placeholder="温柔">
+          </label>
+          <label class="memory-field">
+            <span>天气</span>
+            <input id="memoryWeather" name="weather" type="text" maxlength="40" placeholder="雪">
+          </label>
+          <label class="memory-field">
+            <span>标签 <em>用逗号分隔</em></span>
+            <input id="memoryTags" name="tags" type="text" maxlength="120" placeholder="初雪, 冬天">
+          </label>
+        </div>
+
+        <label class="memory-field">
+          <span>金句 <em>可选</em></span>
+          <input id="memoryQuote" name="quote" type="text" maxlength="300" placeholder="一句话记住这个瞬间">
+        </label>
+
+        <label class="memory-field">
+          <span>正文</span>
+          <textarea id="memoryBody" name="body" rows="7" maxlength="20000" required placeholder="那天发生了什么？你记得哪个细节？"></textarea>
+        </label>
+
+        <div class="memory-photo">
+          <label class="memory-field">
+            <span>封面照片 <em>可选，从已有照片墙选择</em></span>
+            <select id="memoryCover" name="cover">
+              <option value="">不设置封面</option>
+            </select>
+          </label>
+          <label class="memory-upload" for="memoryPhoto">
+            <input id="memoryPhoto" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <span class="memory-upload__button">+ 上传新照片</span>
+            <span class="memory-upload__hint">JPG / PNG / WebP，会自动压缩</span>
+          </label>
+        </div>
+        <div class="memory-photo-preview" id="memoryPhotoPreview" hidden>
+          <img id="memoryPhotoImage" alt="封面预览">
+          <div>
+            <span id="memoryPhotoInfo"></span>
+            <button type="button" id="memoryPhotoClear">移除上传</button>
+          </div>
+        </div>
+        <p class="memory-photo-note">上传的新照片会同时进入照片墙；上传优先于下拉选择。</p>
+
+        <div class="memory-form__foot">
+          <p>这个入口只在本机显示；公网链接里不会出现。</p>
+          <button class="btn btn--primary" type="submit" id="memorySubmit">保存这篇回忆</button>
+        </div>
+        <p class="memory-status" id="memoryStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="memory-modal" id="photoModal" hidden>
+    <div class="memory-modal__backdrop" data-photo-close></div>
+    <div class="memory-modal__dialog" id="photoDialog" role="dialog" aria-modal="true" aria-labelledby="photoModalTitle" tabindex="-1">
+      <button class="memory-modal__close" type="button" id="photoClose" aria-label="关闭添加照片">×</button>
+      <header class="memory-modal__head">
+        <p class="eyebrow"><span class="eyebrow__line" aria-hidden="true"></span>ADD A PHOTO</p>
+        <h3 id="photoModalTitle">往照片墙里加一张照片</h3>
+        <p>照片会保存到 content/media/photos/，并登记进照片墙。</p>
+      </header>
+
+      <form class="memory-form" id="photoForm" novalidate>
+        <div class="memory-photo">
+          <label class="memory-upload" for="photoFile">
+            <input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <span class="memory-upload__button">+ 选择照片</span>
+            <span class="memory-upload__hint">JPG / PNG / WebP，会自动压缩</span>
+          </label>
+        </div>
+        <div class="memory-photo-preview" id="photoPreview" hidden>
+          <img id="photoPreviewImage" alt="照片预览">
+          <div>
+            <span id="photoPreviewInfo"></span>
+            <button type="button" id="photoClear">移除照片</button>
+          </div>
+        </div>
+
+        <div class="memory-form__grid">
+          <label class="memory-field">
+            <span>标题</span>
+            <input id="photoCaption" type="text" maxlength="80" required placeholder="例如：春天的第一张合照">
+          </label>
+          <label class="memory-field">
+            <span>日期</span>
+            <input id="photoDate" type="date" required>
+          </label>
+          <label class="memory-field">
+            <span>地点 <em>可选</em></span>
+            <input id="photoPlace" type="text" maxlength="80" placeholder="杭州 · 西湖">
+          </label>
+        </div>
+
+        <div class="memory-form__foot">
+          <p>照片只添加到照片墙，不会自动新建一篇回忆。</p>
+          <button class="btn btn--primary" type="submit" id="photoSubmit">添加到照片墙</button>
+        </div>
+        <p class="memory-status" id="photoStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="memory-modal" id="letterEditor" hidden>
+    <div class="memory-modal__backdrop" data-letter-editor-close></div>
+    <div class="memory-modal__dialog" id="letterEditorDialog" role="dialog" aria-modal="true" aria-labelledby="letterEditorTitle" tabindex="-1">
+      <button class="memory-modal__close" type="button" id="letterEditorClose" aria-label="关闭写信">×</button>
+      <header class="memory-modal__head">
+        <p class="eyebrow"><span class="eyebrow__line" aria-hidden="true"></span>A LETTER TO KEEP</p>
+        <h3 id="letterEditorTitle">写一封只给 TA 看的信</h3>
+        <p>暗号只保存在本机；公开页面只会收到加密后的内容。</p>
+      </header>
+
+      <form class="memory-form" id="letterEditorForm" novalidate>
+        <div class="memory-form__grid">
+          <label class="memory-field">
+            <span>拆信暗号</span>
+            <input id="letterEditorCode" type="text" maxlength="12" autocomplete="off" spellcheck="false" required placeholder="例如：第一次见面的日子">
+          </label>
+          <label class="memory-field">
+            <span>再输一次暗号</span>
+            <input id="letterEditorCodeConfirm" type="text" maxlength="12" autocomplete="off" spellcheck="false" required placeholder="确认没有输错">
+          </label>
+        </div>
+
+        <label class="memory-field">
+          <span>暗号提示 <em>可选，不要写答案</em></span>
+          <input id="letterEditorHint" type="text" maxlength="160" placeholder="例如：我们第一次见面的日子，四位数字。">
+        </label>
+
+        <label class="memory-field">
+          <span>正文 <em>空一行分段</em></span>
+          <textarea id="letterEditorBody" rows="10" maxlength="20000" required placeholder="写这封信的时候，你想到的是什么？"></textarea>
+        </label>
+
+        <div class="memory-form__grid">
+          <label class="memory-field">
+            <span>署名 <em>可选</em></span>
+            <input id="letterEditorSignature" type="text" maxlength="40" placeholder="爱你的某某">
+          </label>
+          <label class="memory-field">
+            <span>P.S. <em>可选</em></span>
+            <input id="letterEditorPs" type="text" maxlength="300" placeholder="如果今天不开心，就再看一遍。">
+          </label>
+        </div>
+
+        <div class="memory-form__foot">
+          <p>保存后会立刻上锁；每次打开页面都会重新加密。</p>
+          <button class="btn btn--primary" type="submit" id="letterEditorSubmit">封好这封信</button>
+        </div>
+        <p class="memory-status" id="letterEditorStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="space-modal" id="spaceModal" hidden>
+    <div class="space-modal__backdrop" data-space-close></div>
+    <div class="space-modal__dialog" id="spaceDialog" role="dialog" aria-modal="true" aria-labelledby="spaceModalTitle" tabindex="-1">
+      <button class="space-modal__close" type="button" id="spaceClose" aria-label="关闭注销">×</button>
+      <p class="space-modal__kicker">DANGER ZONE</p>
+      <h3 id="spaceModalTitle">注销恋爱空间</h3>
+      <p class="space-modal__text" id="spaceStepText">这会删除你们的名字、相爱日期、生日、照片、回忆、留言和情书。</p>
+      <div class="space-modal__progress">
+        <span id="spaceStepCount">1 / 3</span>
+        <span>连点三次确认后才会删除</span>
+      </div>
+      <p class="space-status" id="spaceStatus" role="status" aria-live="polite"></p>
+      <div class="space-modal__actions">
+        <button class="space-modal__cancel" type="button" id="spaceCancel">取消</button>
+        <button class="space-modal__confirm" type="button" id="spaceConfirm">第 1 次确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <div class="lightbox__backdrop" data-lightbox-close></div>
+    <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-label="照片大图">
+      <button class="lightbox__close" type="button" id="lightboxClose" aria-label="关闭大图">×</button>
+      <button class="lightbox__nav lightbox__nav--prev" type="button" id="lightboxPrev" aria-label="上一张">←</button>
+      <figure class="lightbox__figure">
+        <div class="lightbox__image-wrap">
+          <img id="lightboxImage" src="" alt="">
+        </div>
+        <figcaption class="lightbox__caption">
+          <span class="lightbox__date" id="lightboxDate"></span>
+          <strong id="lightboxTitle"></strong>
+          <span class="lightbox__place" id="lightboxPlace"></span>
+        </figcaption>
+      </figure>
+      <button class="lightbox__nav lightbox__nav--next" type="button" id="lightboxNext" aria-label="下一张">→</button>
+      <p class="lightbox__counter" id="lightboxCounter"></p>
+    </div>
+  </div>
+
+  <div class="error-banner" id="errorBanner" hidden>
+    <strong>宇宙还没有点亮</strong>
+    <p>没有读取到站点数据。请先在项目目录运行 <code>npm start</code>，再打开 http://localhost:4321。</p>
+  </div>
+
+  <noscript>
+    <div class="error-banner">
+      <strong>需要 JavaScript</strong>
+      <p>这个宇宙需要 JavaScript 才能点亮。请换一个现代浏览器，或开启 JavaScript。</p>
+    </div>
+  </noscript>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+  <script src="./editor.js"></script>
+  <script src="./gallery-admin.js"></script>
+  <script src="./space-admin.js"></script>
+  <script src="./letter.js"></script>
+  <script src="./letter-admin.js"></script>
+  <script src="./guestbook.js"></script>
+  <script src="./game.js"></script>
+</body>
+</html>

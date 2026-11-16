@@ -1,0 +1,28 @@
+{
+  "name": "lovespace",
+  "version": "0.1.0",
+  "description": "一个零依赖、可自托管的恋爱宇宙：首次初始化、照片墙、回忆、情书、留言和公网分享。",
+  "type": "commonjs",
+  "license": "MIT",
+  "author": "LoveSpace contributors",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "memoir": "node scripts/memoir.js",
+    "share": "node scripts/share.js",
+    "test": "node tests/smoke.test.js"
+  },
+  "keywords": [
+    "love",
+    "anniversary",
+    "photo-wall",
+    "countdown",
+    "markdown",
+    "self-hosted",
+    "zero-dependency",
+    "cloudflare-tunnel"
+  ]
+}
