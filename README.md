@@ -227,6 +227,14 @@ tests/              零依赖 smoke tests
 server.js           零依赖本地服务器
 ~~~
 
+## 部署
+
+最简单的部署是“自己的电脑 + Cloudflare Tunnel”，不需要服务器。
+
+也可以部署到 VPS，用 Caddy + systemd 固定域名；初始化和管理通过 SSH 隧道完成。
+
+完整步骤见 [部署指南](docs/deploy.md)。
+
 ## 上传到 GitHub
 
 这个目录已经是一个 Git 仓库，并包含一个初始提交。
