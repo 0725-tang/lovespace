@@ -235,38 +235,6 @@ server.js           零依赖本地服务器
 
 完整步骤见 [部署指南](docs/deploy.md)。
 
-## 上传到 GitHub
-
-这个目录已经是一个 Git 仓库，并包含一个初始提交。
-
-在 GitHub 新建一个空仓库，然后：
-
-~~~bash
-git remote add origin https://github.com/<your-account>/lovespace.git
-git branch -M main
-git push -u origin main
-~~~
-
-个人数据已经写进 .gitignore：
-
-~~~text
-content/site.json
-content/photos.json
-content/memories/*.md
-content/media/photos/*
-data/guestbook.json
-~~~
-
-所以正常 `git add .` 不会把名字、照片、回忆和留言提交上去。
-
-如果手动压缩整个文件夹上传，请先确认压缩包里没有这些文件。可以用 `git archive` 生成干净源码包：
-
-~~~bash
-git archive --format=zip -o lovespace-source.zip HEAD
-~~~
-
-GitHub Pages 只能托管静态页面，不能运行 Node 服务和写入文件。这个项目需要部署在支持 Node.js 和持久磁盘的地方，例如自己的电脑、VPS、Render 或 Fly.io。
-
 ## 参与贡献
 
 - [贡献说明](CONTRIBUTING.md)
