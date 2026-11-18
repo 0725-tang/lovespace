@@ -104,7 +104,7 @@
     setText('guestbookEyebrow', site.guestbook && site.guestbook.eyebrow);
     setText('guestbookTitle', site.guestbook && site.guestbook.title);
     setText('guestbookSubtitle', site.guestbook && site.guestbook.subtitle);
-    setText('guestbookQuote', site.guestbook && site.guestbook.quote);
+    setText('guestbookQuote', String((site.guestbook && site.guestbook.quote) || '').replace(/\\n/g, '\n').replace(/\\r\\n/g, '\n'));
     setText('guestbookNote', site.guestbook && site.guestbook.note);
     setText('guestbookSubmitText', (site.guestbook && site.guestbook.button) || '把这句话留下');
     var guestNameInput = document.getElementById('guestName');
