@@ -108,6 +108,30 @@
     text.className = 'guestbook-note__text';
     text.textContent = String(message.message || '');
     note.appendChild(text);
+
+    if (data.canEdit) {
+      var remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'guestbook-note__delete';
+      remove.textContent = '删除';
+      remove.title = '删除这条留言';
+      remove.addEventListener('click', async function () {
+        if (!window.confirm('删除这条留言？删除后不能恢复。')) return;
+        remove.disabled = true;
+        try {
+          var response = await window.fetch('/api/guestbook?id=' + encodeURIComponent(message.id), { method: 'DELETE' });
+          var result = await response.json().catch(function () { return {}; });
+          if (!response.ok) throw new Error(result.message || '删除失败。');
+          messages = messages.filter(function (item) { return item.id !== message.id; });
+          render();
+          setStatus('留言已删除。', 'success');
+        } catch (error) {
+          remove.disabled = false;
+          window.alert(error.message);
+        }
+      });
+      note.appendChild(remove);
+    }
     return note;
   }
 

@@ -392,6 +392,9 @@
       <span id="footerCredit">Made with LoveSpace</span>
     </p>
     <button class="space-delete" type="button" id="spaceDelete" hidden>注销恋爱空间</button>
+    <button class="editor-auth" type="button" id="editorPassword" hidden>设置公网管理密码</button>
+    <button class="editor-auth" type="button" id="editorLogin" hidden>管理</button>
+    <button class="editor-auth" type="button" id="editorLogout" hidden>退出管理</button>
   </footer>
 
   <div class="letter-modal" id="letterModal" hidden>
@@ -629,6 +632,33 @@
     </div>
   </div>
 
+  <div class="memory-modal" id="editorAuthModal" hidden>
+    <div class="memory-modal__backdrop" data-editor-auth-close></div>
+    <div class="memory-modal__dialog" id="editorAuthDialog" role="dialog" aria-modal="true" aria-labelledby="editorAuthTitle" tabindex="-1">
+      <button class="memory-modal__close" type="button" id="editorAuthClose" aria-label="关闭">×</button>
+      <header class="memory-modal__head">
+        <p class="eyebrow"><span class="eyebrow__line" aria-hidden="true"></span>PRIVATE EDITING</p>
+        <h3 id="editorAuthTitle">管理这个空间</h3>
+        <p id="editorAuthText">输入管理密码后，可以在公网链接上添加照片、写回忆和删除留言。</p>
+      </header>
+      <form class="memory-form" id="editorAuthForm" novalidate>
+        <label class="memory-field">
+          <span>管理密码</span>
+          <input id="editorAuthPassword" type="password" maxlength="64" autocomplete="current-password" required placeholder="输入管理密码">
+        </label>
+        <label class="memory-field" id="editorAuthConfirmField" hidden>
+          <span>再输一次</span>
+          <input id="editorAuthConfirm" type="password" maxlength="64" autocomplete="new-password" placeholder="确认管理密码">
+        </label>
+        <div class="memory-form__foot">
+          <p>密码只保存在本机；公网访客不知道密码时只能浏览。</p>
+          <button class="btn btn--primary" type="submit" id="editorAuthSubmit">进入管理模式</button>
+        </div>
+        <p class="memory-status" id="editorAuthStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
   <div class="lightbox" id="lightbox" hidden>
     <div class="lightbox__backdrop" data-lightbox-close></div>
     <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-label="照片大图">
@@ -666,6 +696,7 @@
   <script src="./editor.js"></script>
   <script src="./gallery-admin.js"></script>
   <script src="./space-admin.js"></script>
+  <script src="./admin-auth.js"></script>
   <script src="./letter.js"></script>
   <script src="./letter-admin.js"></script>
   <script src="./guestbook.js"></script>

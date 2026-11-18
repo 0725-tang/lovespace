@@ -5,8 +5,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { URL } = require('node:url');
 const { aiConfig, generateReply } = require('./lib/assistant');
-const { buildSiteData } = require('./lib/content');
-const { addMessage, readGuestbook } = require('./lib/guestbook');
+const { buildSiteData, loadSite } = require('./lib/content');
+const { addMessage, deleteMessage, readGuestbook } = require('./lib/guestbook');
+const { clearCookie, hasPassword, isEditorSession, sessionCookie, setEditorPassword, verifyPassword } = require('./lib/editor-auth');
 const { createMemory, createPhoto, deleteMemory, deletePhoto } = require('./lib/memory-writer');
 const { deleteSpace, isSetupComplete, saveSetup } = require('./lib/setup');
 const { readLetter, saveLetter } = require('./lib/letter-writer');
@@ -56,8 +57,8 @@ function send(res, status, body, headers = {}) {
   else res.end(payload);
 }
 
-function sendJson(res, status, payload) {
-  send(res, status, JSON.stringify(payload), { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+function sendJson(res, status, payload, headers = {}) {
+  send(res, status, JSON.stringify(payload), { ...headers, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
 }
 
 function redirect(res, location) {
@@ -142,6 +143,11 @@ function isLocalEditor(req) {
   return address === '127.0.0.1' || address === '::1';
 }
 
+function canEditRequest(req, root) {
+  if (isLocalEditor(req)) return true;
+  return isEditorSession(req, loadSite(root));
+}
+
 function clientIp(req) {
   const forwarded = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'];
   return String(forwarded || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
@@ -152,6 +158,7 @@ function createHandler(root = ROOT) {
   const mediaRoot = path.join(root, 'content', 'media');
   const guestbookLimit = createRateLimiter(5, 60 * 1000);
   const assistantLimit = createRateLimiter(20, 60 * 1000);
+  const editorLimit = createRateLimiter(6, 60 * 1000);
 
   return async function handler(req, res) {
     let pathname;
@@ -207,8 +214,14 @@ function createHandler(root = ROOT) {
 
     if (req.method === 'GET' && pathname === '/data.js') {
       try {
+        const site = loadSite(root);
         const data = buildSiteData(root, { mode: 'live', guestbook: readGuestbook(root).slice(0, 20) });
-        data.canEdit = isLocalEditor(req);
+        const localEditor = isLocalEditor(req);
+        const editorLoggedIn = isEditorSession(req, site);
+        data.canEdit = localEditor || editorLoggedIn;
+        data.localEditor = localEditor;
+        data.editorEnabled = hasPassword(site);
+        data.editorLoggedIn = editorLoggedIn;
         return send(res, 200, 'window.LOVESPACE_DATA = ' + JSON.stringify(data).replace(/</g, '\\u003c') + ';\n', {
           'Content-Type': 'text/javascript; charset=utf-8',
           'Cache-Control': 'no-store'
@@ -237,9 +250,47 @@ function createHandler(root = ROOT) {
       }
     }
 
+    if (pathname === '/api/editor/password' && req.method === 'POST') {
+      if (!isLocalEditor(req)) return sendJson(res, 403, { error: 'local_only', message: '设置管理密码只能在电脑本机操作。' });
+      let body;
+      try {
+        body = JSON.parse((await readBody(req, 16 * 1024)) || '{}');
+      } catch (error) {
+        return sendJson(res, 400, { error: 'bad_json', message: '密码格式不正确' });
+      }
+      try {
+        setEditorPassword(root, body.password);
+        return sendJson(res, 200, { ok: true });
+      } catch (error) {
+        return sendJson(res, error.status || 400, { error: 'password_failed', message: error.message });
+      }
+    }
+
+    if (pathname === '/api/editor/login' && req.method === 'POST') {
+      if (!editorLimit(clientIp(req))) return sendJson(res, 429, { error: 'rate_limited', message: '试得太快了，稍后再试。' });
+      let body;
+      try {
+        body = JSON.parse((await readBody(req, 16 * 1024)) || '{}');
+      } catch (error) {
+        return sendJson(res, 400, { error: 'bad_json', message: '密码格式不正确' });
+      }
+      const site = loadSite(root);
+      if (!hasPassword(site)) return sendJson(res, 409, { error: 'editor_not_set', message: '还没有设置公网管理密码。' });
+      if (!verifyPassword(site, body.password)) return sendJson(res, 401, { error: 'wrong_password', message: '管理密码不正确。' });
+      return sendJson(res, 200, { ok: true, redirect: '/' }, { 'Set-Cookie': sessionCookie(req, site) });
+    }
+
+    if (pathname === '/api/editor/logout' && req.method === 'POST') {
+      return sendJson(res, 200, { ok: true }, { 'Set-Cookie': clearCookie() });
+    }
+
+    if (pathname === '/api/editor/password' || pathname === '/api/editor/login' || pathname === '/api/editor/logout') {
+      return sendJson(res, 405, { error: 'method_not_allowed' });
+    }
+
     if (pathname === '/api/memories' && req.method === 'POST') {
-      if (!isLocalEditor(req)) {
-        return sendJson(res, 403, { error: 'local_only', message: '为了安全，新建回忆只能在电脑本机打开时使用。' });
+      if (!canEditRequest(req, root)) {
+        return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
       }
       let body;
       try {
@@ -256,8 +307,8 @@ function createHandler(root = ROOT) {
     }
 
     if (pathname === '/api/memories' && req.method === 'DELETE') {
-      if (!isLocalEditor(req)) {
-        return sendJson(res, 403, { error: 'local_only', message: '删除回忆只能在电脑本机操作。' });
+      if (!canEditRequest(req, root)) {
+        return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
       }
       try {
         const removed = deleteMemory(root, requestUrl.searchParams.get('slug'));
@@ -272,8 +323,8 @@ function createHandler(root = ROOT) {
     }
 
     if (pathname === '/api/photos' && req.method === 'POST') {
-      if (!isLocalEditor(req)) {
-        return sendJson(res, 403, { error: 'local_only', message: '上传照片只能在电脑本机操作。' });
+      if (!canEditRequest(req, root)) {
+        return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
       }
       let body;
       try {
@@ -290,8 +341,8 @@ function createHandler(root = ROOT) {
     }
 
     if (pathname === '/api/photos' && req.method === 'DELETE') {
-      if (!isLocalEditor(req)) {
-        return sendJson(res, 403, { error: 'local_only', message: '删除照片只能在电脑本机操作。' });
+      if (!canEditRequest(req, root)) {
+        return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
       }
       try {
         const removed = deletePhoto(root, requestUrl.searchParams.get('file'));
@@ -306,8 +357,8 @@ function createHandler(root = ROOT) {
     }
 
     if (pathname === '/api/letter' && req.method === 'GET') {
-      if (!isLocalEditor(req)) {
-        return sendJson(res, 403, { error: 'local_only', message: '写信和改信只能在电脑本机操作。' });
+      if (!canEditRequest(req, root)) {
+        return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
       }
       try {
         return sendJson(res, 200, { ok: true, letter: readLetter(root) });
@@ -317,8 +368,8 @@ function createHandler(root = ROOT) {
     }
 
     if (pathname === '/api/letter' && req.method === 'POST') {
-      if (!isLocalEditor(req)) {
-        return sendJson(res, 403, { error: 'local_only', message: '写信和改信只能在电脑本机操作。' });
+      if (!canEditRequest(req, root)) {
+        return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
       }
       let body;
       try {
@@ -344,6 +395,17 @@ function createHandler(root = ROOT) {
       }
       if (req.method === 'GET') {
         return sendJson(res, 200, { messages: readGuestbook(root).slice(0, 50) });
+      }
+      if (req.method === 'DELETE') {
+        if (!canEditRequest(req, root)) {
+          return sendJson(res, 403, { error: 'editor_required', message: '需要管理权限。' });
+        }
+        try {
+          const removed = deleteMessage(root, requestUrl.searchParams.get('id'));
+          return sendJson(res, 200, { ok: true, removed: removed });
+        } catch (error) {
+          return sendJson(res, error.status || 400, { error: 'delete_failed', message: error.message });
+        }
       }
       if (req.method === 'POST') {
         if (!guestbookLimit(clientIp(req))) return sendJson(res, 429, { error: 'rate_limited', message: '慢一点，星星也要喘口气' });

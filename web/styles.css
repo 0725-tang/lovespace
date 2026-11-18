@@ -3028,8 +3028,35 @@ body.is-ready .preloader {
   to { opacity: 1; transform: none; }
 }
 
+.guestbook-note__delete {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  z-index: 2;
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 143, 163, 0.24);
+  background: none;
+  color: var(--faint);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.guestbook-note__delete:hover {
+  border-color: var(--rose);
+  color: var(--rose);
+}
+
+.guestbook-note__delete:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
 .guestbook-note__top {
   display: flex;
+  padding-right: 42px;
   align-items: center;
   gap: 9px;
   margin-bottom: 10px;
@@ -3338,6 +3365,31 @@ body.is-ready .preloader {
 }
 
 /* ---------- space cancellation ---------- */
+
+.editor-auth {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: none;
+  color: var(--faint);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.editor-auth:hover {
+  border-color: var(--rose);
+  color: var(--rose);
+}
+
+@media (max-width: 560px) {
+  .editor-auth {
+    margin-left: 0;
+  }
+}
 
 .space-delete {
   flex: 0 0 auto;

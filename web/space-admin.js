@@ -2,7 +2,7 @@
 
 (function () {
   var data = window.LOVESPACE_DATA;
-  if (!data || !data.canEdit) return;
+  if (!data || !data.localEditor) return;
 
   var trigger = document.getElementById('spaceDelete');
   var modal = document.getElementById('spaceModal');

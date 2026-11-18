@@ -11,6 +11,8 @@ const { dateOnly, deleteSpace, isSetupComplete, saveSetup } = require('../lib/se
 const { buildSiteData, listMemories, loadPhotos, loadSite, parseFrontmatter } = require('../lib/content');
 const { createMemory } = require('../lib/memory-writer');
 const { readLetter, saveLetter } = require('../lib/letter-writer');
+const { hasPassword, isEditorSession, sessionCookie, setEditorPassword, verifyPassword } = require('../lib/editor-auth');
+const { addMessage, deleteMessage, readGuestbook } = require('../lib/guestbook');
 const { publicLetter } = require('../lib/letter');
 
 function tempRoot(t) {
@@ -121,4 +123,30 @@ test('frontmatter parser handles quoted strings, lists, and body', function () {
   assert.equal(parsed.data.title, '看雪');
   assert.deepEqual(parsed.data.tags, ['雪', '冬天']);
   assert.equal(parsed.body, '正文。');
+});
+test('public editor password creates a signed session and stays out of public data', function (t) {
+  const root = tempRoot(t);
+  saveSetup(root, profile);
+  setEditorPassword(root, 'Test-2026');
+
+  const site = loadSite(root);
+  assert.equal(hasPassword(site), true);
+  assert.equal(verifyPassword(site, 'Test-2026'), true);
+  assert.equal(verifyPassword(site, 'wrong'), false);
+
+  const cookieHeader = sessionCookie({ headers: {}, socket: {} }, site);
+  const cookie = cookieHeader.split(';')[0];
+  const req = { headers: { cookie: cookie }, socket: {} };
+  assert.equal(isEditorSession(req, site), true);
+  assert.equal(isEditorSession({ headers: {}, socket: {} }, site), false);
+  assert.equal(buildSiteData(root).site.editor, undefined);
+});
+
+test('guestbook messages can be added and deleted by an editor', function (t) {
+  const root = tempRoot(t);
+  saveSetup(root, profile);
+  const message = addMessage(root, { name: '访客', message: '测试留言' });
+  assert.equal(readGuestbook(root).length, 1);
+  deleteMessage(root, message.id);
+  assert.equal(readGuestbook(root).length, 0);
 });
